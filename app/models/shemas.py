@@ -1,7 +1,6 @@
 from typing import Optional, List, Dict, Union
 from datetime import datetime
 from pydantic import BaseModel, Field
-from beanie import Document, Indexed
 
 class UserProfile(BaseModel):
     gender: str = Field(..., description="User's gender", example="male")
@@ -61,15 +60,13 @@ class DailyMeal(BaseModel):
     dinner: List[MealItem]
     snacks: List[MealItem]
 
-class MealPlan(Document):
+class MealPlan(BaseModel):
+    id: str
     user_profile: UserProfile
     meal_plan_text: str
     response_time_seconds: float
     created_at: datetime = datetime.utcnow()
-
-    class Settings:
-        name = "meal_plans"
-        
+    
     class Config:
         json_encoders = {
             datetime: lambda v: v.isoformat()

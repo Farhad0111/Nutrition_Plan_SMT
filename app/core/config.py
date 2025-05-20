@@ -12,10 +12,6 @@ class Settings(BaseSettings):
     API_URL: str = "https://api.openai.com/v1/chat/completions"
     MODEL: str = "gpt-4.1"  # or "gpt-3.5-turbo"
     
-    # MongoDB Settings
-    MONGO_URI: str = os.getenv('MONGO_URI')
-    DB_NAME: str = os.getenv('DB_NAME')
-    
     # FatSecret API Configuration
     FAT_SECRET_BASEURL: str = "https://platform.fatsecret.com/rest/server.api"
     FAT_SECRET_CLIENT_ID: str = os.getenv('FAT_SECRET_CLIENT_ID', "0e8ff12cec694293aa140f85136fdff9")

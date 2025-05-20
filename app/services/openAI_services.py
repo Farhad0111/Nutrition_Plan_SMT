@@ -1,6 +1,7 @@
 import time
 import json
 import requests
+import uuid
 from datetime import datetime
 from fastapi import HTTPException
 from app.core.config import settings
@@ -87,24 +88,24 @@ async def get_meal_plan(user: UserProfile):
             # Convert back to JSON string
             clean_response_content = json.dumps(cleaned_data, indent=2)
             
-            # Create meal plan document with cleaned data
+            # Create meal plan with cleaned data (without MongoDB)
             meal_plan = MealPlan(
+                id=str(uuid.uuid4()),
                 user_profile=user,
                 meal_plan_text=clean_response_content,
                 response_time_seconds=elapsed_time
             )
-            await meal_plan.insert()
             
             return meal_plan
             
         except json.JSONDecodeError:
             # If parsing fails, return the original response
             meal_plan = MealPlan(
+                id=str(uuid.uuid4()),
                 user_profile=user,
                 meal_plan_text=response_content,
                 response_time_seconds=elapsed_time
             )
-            await meal_plan.insert()
             
             return meal_plan
             
