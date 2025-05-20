@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     
     # FatSecret API Configuration
     FAT_SECRET_BASEURL: str = "https://platform.fatsecret.com/rest/server.api"
-    FAT_SECRET_CLIENT_ID: str = os.getenv('FAT_SECRET_CLIENT_ID', "0e8ff12cec694293aa140f85136fdff9")
-    FAT_SECRET_CLIENT_SECRET: str = os.getenv('FAT_SECRET_CLIENT_SECRET', "c9d384a9101b4972be8b96901f274708")
+    FAT_SECRET_CLIENT_ID: str = os.getenv('FAT_SECRET_CLIENT_ID')
+    FAT_SECRET_CLIENT_SECRET: str = os.getenv('FAT_SECRET_CLIENT_SECRET')
     FAT_SECRET_AUTH_URL: str = "https://oauth.fatsecret.com/connect/token"
     
     # RDI Values (based on 2000 calorie diet) - standard values
