@@ -121,7 +121,8 @@ def calculate_nutrition_for_item(food_data, totalFood, unit, servingSize):
         
         # Calculate the multiplier based on serving size and total food
         serving_quantity = float(serving.get('number_of_units', 1))
-        multiplier = (totalFood / serving_quantity) * (servingSize / serving_quantity)
+        # Calculate multiplier based on the ratio of requested amount to standard serving
+        multiplier = (totalFood * servingSize) / serving_quantity
         
         # Extract and convert nutrients
         nutrition = {}
@@ -173,7 +174,7 @@ def calculate_nutrition_for_item(food_data, totalFood, unit, servingSize):
                 try:
                     numeric_value = float(value)
                     nutrition[output_field] = numeric_value * multiplier
-                except ValueError:
+                except (ValueError, TypeError):
                     nutrition[output_field] = 0
             else:
                 nutrition[output_field] = 0

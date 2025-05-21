@@ -2,7 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
 from app.core.config import settings
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 app = FastAPI(
     title="Meal Plan API",
     description="API for generating personalized meal plans",

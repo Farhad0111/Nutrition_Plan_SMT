@@ -1,6 +1,14 @@
 from fastapi import APIRouter, HTTPException, Body, Query
-from app.models.shemas import UserProfile, MealPlan, FoodItem, NutritionResponse
-from app.services.openAI_services import get_meal_plan
+from app.models.shemas import (
+    UserProfile, 
+    MealPlan, 
+    FoodItem, 
+    NutritionResponse, 
+    WorkoutPlan,
+    WorkoutItem,
+    WorkoutPlanDay
+)
+from app.services.openAI_services import get_meal_plan, get_workout_plan
 from app.services.nutrition_service import calculate_nutrition_for_foods
 from app.services.combined_service import get_meal_plan_with_nutrition
 from app.models.combined_response import MealPlanWithNutrition
@@ -10,6 +18,8 @@ router = APIRouter()
 
 # In-memory storage to replace MongoDB
 meal_plans_db: Dict[str, MealPlan] = {}
+# In-memory storage for workout plans
+workout_plans_db: Dict[str, WorkoutPlan] = {}
 
 @router.get("/health")
 async def check_health():
@@ -59,3 +69,28 @@ async def calculate_nutrition(food_items: List[FoodItem] = Body(...)):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/workout-plans", response_model=WorkoutPlan)
+async def create_workout_plan(user: UserProfile):
+    """Create a new workout plan"""
+    try:
+        workout_plan = await get_workout_plan(user)
+        workout_plans_db[workout_plan.id] = workout_plan
+        return workout_plan
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/workout-plans/{workout_plan_id}", response_model=WorkoutPlan)
+async def get_workout_plan_by_id(workout_plan_id: str):
+    """Get a specific workout plan by ID"""
+    if workout_plan_id not in workout_plans_db:
+        raise HTTPException(status_code=404, detail="Workout plan not found")
+    return workout_plans_db[workout_plan_id]
+
+@router.get("/workout-plans", response_model=List[WorkoutPlan])
+async def get_all_workout_plans(skip: int = 0, limit: int = 10):
+    """Get all workout plans with pagination"""
+    plans = list(workout_plans_db.values())
+    start = min(skip, len(plans))
+    end = min(skip + limit, len(plans))
+    return plans[start:end]

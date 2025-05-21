@@ -1,6 +1,7 @@
 from typing import Optional, List, Dict, Union
 from datetime import datetime
 from pydantic import BaseModel, Field
+import uuid
 
 class UserProfile(BaseModel):
     gender: str = Field(..., description="User's gender", example="male")
@@ -71,3 +72,27 @@ class MealPlan(BaseModel):
         json_encoders = {
             datetime: lambda v: v.isoformat()
         }
+
+class WorkoutItem(BaseModel):
+    name: str
+    sets: int
+    reps: str
+    rest: str
+
+class WorkoutPlanDay(BaseModel):
+    day: str
+    focus: str
+    workoutPlan: List[WorkoutItem]
+
+class WorkoutPlan(BaseModel):
+    id: str = str(uuid.uuid4())
+    user_profile: UserProfile
+    workout_plan_text: str
+    response_time_seconds: float
+    created_at: datetime = datetime.utcnow()
+
+class Config:
+    json_encoders = {
+        datetime: lambda v: v.isoformat()
+        }
+

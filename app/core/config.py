@@ -8,14 +8,14 @@ load_dotenv()
 
 class Settings(BaseSettings):
     # OpenAI Settings
-    API_KEY: str = os.getenv('API_KEY')
+    API_KEY: str
     API_URL: str = "https://api.openai.com/v1/chat/completions"
     MODEL: str = "gpt-4.1"  # or "gpt-3.5-turbo"
     
     # FatSecret API Configuration
     FAT_SECRET_BASEURL: str = "https://platform.fatsecret.com/rest/server.api"
-    FAT_SECRET_CLIENT_ID: str = os.getenv('FAT_SECRET_CLIENT_ID')
-    FAT_SECRET_CLIENT_SECRET: str = os.getenv('FAT_SECRET_CLIENT_SECRET')
+    FAT_SECRET_CLIENT_ID: str
+    FAT_SECRET_CLIENT_SECRET: str
     FAT_SECRET_AUTH_URL: str = "https://oauth.fatsecret.com/connect/token"
     
     # RDI Values (based on 2000 calorie diet) - standard values
