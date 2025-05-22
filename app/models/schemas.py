@@ -1,4 +1,4 @@
-from typing import Optional, List, Dict, Union
+from typing import Optional, List, Dict, Union, Literal
 from datetime import datetime
 from pydantic import BaseModel, Field
 import uuid
@@ -17,24 +17,25 @@ class UserProfile(BaseModel):
     accomplish: str = Field("N/A", description="Additional goals", example="build muscle")
 
 class FoodItem(BaseModel):
-    name: str
-    totalFood: float = 1.0
-    unit: str = "serving"
-    servingSize: float = 1.0
+    meal: Literal["BREAKFAST", "LUNCH", "DINNER", "SNACK"]
+    name: str = Field(..., min_length=1)
+    quantity: float = Field(..., gt=0)
+    unit: Literal["g", "ml", "pcs", "serving"] = "serving"
+    serving_size: Optional[float] = Field(None, gt=0)
 
 class NutrientInfo(BaseModel):
-    value: float
-    unit: str
-    rdi_percent: Optional[float] = None
+    value: float = Field(..., ge=0)
+    unit: Literal["g", "mg", "mcg", "IU", "kcal"] = "g"
+    rdi_percent: Optional[float] = Field(None, ge=0)  # Removed le=100 constraint
 
 class NutritionResponse(BaseModel):
     calories: NutrientInfo
     protein: NutrientInfo
     carbs: NutrientInfo
     fat: NutrientInfo
-    saturatedFat: NutrientInfo
-    monounsaturatedFat: Optional[NutrientInfo] = None
-    polyunsaturatedFat: Optional[NutrientInfo] = None
+    saturated_fat: NutrientInfo
+    monounsaturated_fat: Optional[NutrientInfo] = None
+    polyunsaturated_fat: Optional[NutrientInfo] = None
     sugar: Optional[NutrientInfo] = None
     fiber: Optional[NutrientInfo] = None
     cholesterol: Optional[NutrientInfo] = None
@@ -42,24 +43,25 @@ class NutritionResponse(BaseModel):
     potassium: Optional[NutrientInfo] = None
     calcium: Optional[NutrientInfo] = None
     iron: Optional[NutrientInfo] = None
-    vitaminA: Optional[NutrientInfo] = None
-    vitaminC: Optional[NutrientInfo] = None
+    vitamin_a: Optional[NutrientInfo] = None
+    vitamin_c: Optional[NutrientInfo] = None
 
 class NutritionInfo(BaseModel):
-    mealPlanType: str
-    servingSize: float = 1.0
-    nutritionalValues: Optional[NutritionResponse] = None
+    meal_type: Literal["BREAKFAST", "LUNCH", "DINNER", "SNACK"]
+    serving_size: float = Field(1.0, gt=0)
+    nutritional_values: Optional[NutritionResponse] = None
 
 class MealItem(BaseModel):
-    name: str
-    portion: str
+    name: str = Field(..., min_length=1)
+    quantity: float = Field(..., gt=0)
+    unit: Literal["g", "ml", "pcs", "serving"] = "serving"
     nutrition: NutritionInfo
 
 class DailyMeal(BaseModel):
-    breakfast: List[MealItem]
-    lunch: List[MealItem]
-    dinner: List[MealItem]
-    snacks: List[MealItem]
+    breakfast: List[MealItem] = Field(default_factory=list)
+    lunch: List[MealItem] = Field(default_factory=list)
+    dinner: List[MealItem] = Field(default_factory=list)
+    snacks: List[MealItem] = Field(default_factory=list)
 
 class MealPlan(BaseModel):
     id: str

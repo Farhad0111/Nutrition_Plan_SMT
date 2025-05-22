@@ -12,13 +12,20 @@ services:
       - API_KEY=${API_KEY}
       - FAT_SECRET_CLIENT_ID=${FAT_SECRET_CLIENT_ID}
       - FAT_SECRET_CLIENT_SECRET=${FAT_SECRET_CLIENT_SECRET}
+      - PYTHONPATH=/app
     volumes:
-      - ./:/app
+      - .:/app
       - ./data:/app/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
+    networks:
+      - meal-plan-network
+
+networks:
+  meal-plan-network:
+    driver: bridge

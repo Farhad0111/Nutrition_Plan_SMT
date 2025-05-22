@@ -5,38 +5,42 @@ import uuid
 from datetime import datetime
 from fastapi import HTTPException
 from app.core.config import settings
-from app.models.shemas import UserProfile, MealPlan,WorkoutItem,WorkoutPlanDay,WorkoutPlan
+from app.models.schemas import UserProfile, MealPlan,WorkoutItem,WorkoutPlanDay,WorkoutPlan
+
 def generate_meal_plan_prompt(user: UserProfile) -> str:
     return f"""
-You are a professional nutritionist AI. Based on the following user profile, generate a simplified daily meal plan.
+You are a professional nutritionist AI. Based on the UserProfile below, output a daily meal plan in strict JSON format.
 
 User Profile:
 - Gender: {user.gender}
 - Age: {user.age}
-- Height: {user.height}cm
-- Current Weight: {user.weight}kg
-- Target Weight: {user.desiredWeight}kg
-- Weekly Weight Goal: {user.weeklyWeightLossGoal}kg
+- Height: {user.height} cm
+- Current Weight: {user.weight} kg
+- Target Weight: {user.desiredWeight} kg
+- Weekly Weight Goal: {user.weeklyWeightLossGoal} kg
 - Training: {user.trainingDay} days/week at {user.workoutLocation}
 - Diet Type: {user.dietType.upper()}
 - Goals: {user.reachingGoals}, {user.accomplish}
 
-Instructions:
--MOST IMPORTANT: FOOD MUST BE HALAL
-- For each meal (BREAKFAST, LUNCH, DINNER, SNACK), suggest 3-5 healthy food items.
-- For each food item, return a JSON object with EXACTLY the following format:
+Requirements:
+1. ALL FOOD ITEMS MUST BE HALAL.
+2. Provide four meal categories: BREAKFAST, LUNCH, DINNER, SNACK.
+3. For each meal, list 3–5 items.
+4. Use **exactly** this JSON schema for each item:
+
 {{
-  "mealPlanType": "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK",
-  "name": "Food Name",
-  "totalFood": number,
-  "unit": "unit of measurement",
-  "servingSize": number
+  "meal": "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK",
+  "item": "Food Name",
+  "quantity": number,
+  "unit": "g" | "ml" | "pcs"
 }}
 
-- Return the full response as a list of JSON objects (not narrative text).
-- Do NOT include any additional fields such as calories, protein, carbs, etc.
-- Ensure the meal plan is balanced and appropriate for the user's profile and goals.
+— **quantity** is the total weight/volume/count per serving.  
+— **unit** must be **g** for solids, **ml** for liquids, or **pcs** for discrete items.  
+
+5. Return a single JSON array of these objects—no extra text or fields.
 """
+
 
 def generate_workout_plan_prompt(user: UserProfile) -> str:
     # Determine split type based on training days
@@ -98,7 +102,7 @@ async def get_meal_plan(user: UserProfile):
     data = {
         "model": settings.MODEL,
         "messages": [
-            {"role": "system", "content": "You are a professional nutritionist AI. You must respond with valid JSON data only, no other text. Your response must be a JSON array containing objects with ONLY the fields: mealPlanType, name, totalFood, unit, and servingSize."},
+            {"role": "system", "content": "You are a professional nutritionist AI. You must respond with valid JSON data only, no other text. Your response must be a JSON array containing objects with ONLY the fields: meal, item, quantity, and unit."},
             {"role": "user", "content": generate_meal_plan_prompt(user)}
         ],
         "temperature": 0.8, 
@@ -126,12 +130,17 @@ async def get_meal_plan(user: UserProfile):
             # Clean the data - keep only the required fields
             cleaned_data = []
             for item in meal_data:
+                # Skip items without a name
+                if not item.get("item"):
+                    print(f"Skipping item without name: {item}")
+                    continue
+                    
                 cleaned_item = {
-                    "mealPlanType": item.get("mealPlanType", ""),
-                    "name": item.get("name", ""),
-                    "totalFood": item.get("totalFood", 1),
-                    "unit": item.get("unit", "serving"),
-                    "servingSize": item.get("servingSize", 100)
+                    "mealPlanType": item.get("meal", "SNACK"),  # Get meal type
+                    "name": item.get("item").strip(),  # Get food name and remove whitespace
+                    "totalFood": float(item.get("quantity", 1)),  # Get quantity as totalFood
+                    "unit": item.get("unit", "g").lower(),  # Get unit and normalize
+                    "servingSize": float(item.get("quantity", 1))  # Use same quantity for serving size
                 }
                 cleaned_data.append(cleaned_item)
             

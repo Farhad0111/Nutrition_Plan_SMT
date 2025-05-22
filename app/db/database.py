@@ -1,7 +1,7 @@
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.config import settings
-from app.models.shemas import MealPlan
+from app.models.schemas import MealPlan
 
 async def init_db():
     # Create Motor client

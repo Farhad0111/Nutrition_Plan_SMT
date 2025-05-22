@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Body, Query
-from app.models.shemas import (
+from app.models.schemas import (
     UserProfile, 
     MealPlan, 
     FoodItem, 
